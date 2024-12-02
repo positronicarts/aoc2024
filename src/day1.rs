@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct Day1;
 
 impl aoc24::DayInner<Day1, i32> for Day1 {
@@ -13,37 +15,42 @@ impl aoc24::DayInner<Day1, i32> for Day1 {
         let mut vec1: Vec<i32> = Vec::new();
         let mut vec2: Vec<i32> = Vec::new();
 
-        // Brute force loop, updating where necessary
-        for line in lines {
-            let split = line.split("   ").collect::<Vec<&str>>();
-            let i1 = split[0].parse::<i32>().unwrap();
-            let i2 = split[1].parse::<i32>().unwrap();
+        let mut buckets = HashMap::<i32, (i32, i32)>::new();
 
-            vec1.push(i1);
-            vec2.push(i2);
+        for entries in lines
+            .iter()
+            .map(|l| l.split("   "))
+            .map(Iterator::collect::<Vec<&str>>)
+        {
+            let parsed = entries
+                .iter()
+                .map(|s| s.parse::<i32>().unwrap())
+                .collect::<Vec<i32>>();
+
+            let (x, y) = (parsed[0], parsed[1]);
+
+            buckets
+                .entry(x)
+                .and_modify(|(x, _y)| *x += 1)
+                .or_insert((1, 0));
+            buckets
+                .entry(y)
+                .and_modify(|(_x, y)| *y += 1)
+                .or_insert((0, 1));
+
+            vec1.push(x);
+            vec2.push(y);
         }
-
-        let mut sum_diff = 0;
         vec1.sort();
         vec2.sort();
 
+        let mut sum_diff = 0;
         for ii in 0..vec1.len() {
             let diff = (vec1[ii] - vec2[ii]).abs();
             sum_diff += diff;
         }
 
-        // Do the similarity score
-        let mut sim_score = 0;
-
-        for ii in 0..vec1.len() {
-            let x = vec1[ii];
-            let yc = vec2
-                .iter()
-                .filter(|y| **y == x)
-                .collect::<Vec<&i32>>()
-                .len() as i32;
-            sim_score += x * yc;
-        }
+        let sim_score = buckets.iter().map(|(k, (x, y))| k * x * y).sum();
 
         // And we're done!
         (sum_diff, sim_score)
