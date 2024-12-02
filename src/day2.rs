@@ -31,11 +31,10 @@ impl aoc24::DayInner<Day2, i32> for Day2 {
         let mut safe2 = 0;
 
         // Read data - make sure we have a blank line at the end to check the final entries.
-        let lines: Vec<&str> = input.lines().collect();
+        let lines = input.lines();
 
         let reports = lines
-            .iter()
-            .map(|l| l.split(" ").collect::<Vec<&str>>())
+            .map(|l| l.split(" ").collect())
             .collect::<Vec<Vec<&str>>>()
             .iter()
             .map(|s| {
