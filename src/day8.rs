@@ -13,10 +13,10 @@ struct Coordinate {
     y: i32,
 }
 
-impl ops::Add<Coordinate> for Coordinate {
+impl ops::Add<&Coordinate> for &Coordinate {
     type Output = Coordinate;
 
-    fn add(self, _rhs: Coordinate) -> Coordinate {
+    fn add(self, _rhs: &Coordinate) -> Coordinate {
         Coordinate {
             x: self.x + _rhs.x,
             y: self.y + _rhs.y,
@@ -24,10 +24,10 @@ impl ops::Add<Coordinate> for Coordinate {
     }
 }
 
-impl ops::Sub<Coordinate> for Coordinate {
+impl ops::Sub<&Coordinate> for &Coordinate {
     type Output = Coordinate;
 
-    fn sub(self, _rhs: Coordinate) -> Coordinate {
+    fn sub(self, _rhs: &Coordinate) -> Coordinate {
         Coordinate {
             x: self.x - _rhs.x,
             y: self.y - _rhs.y,
@@ -35,7 +35,7 @@ impl ops::Sub<Coordinate> for Coordinate {
     }
 }
 
-impl ops::Mul<i32> for Coordinate {
+impl ops::Mul<i32> for &Coordinate {
     type Output = Coordinate;
 
     fn mul(self, _rhs: i32) -> Coordinate {
@@ -52,12 +52,12 @@ impl Coordinate {
     }
 }
 
-impl aoc24::DayInner<Day8, i32> for Day8 {
+impl aoc24::DayInner<Day8, usize> for Day8 {
     fn day(&self) -> i32 {
         8
     }
 
-    fn inner(&self, input: String) -> (i32, i32) {
+    fn inner(&self, input: String) -> (usize, usize) {
         // Read data - make sure we have a blank line at the end to check the final entries.
         let lines: Vec<&str> = input.lines().collect();
 
@@ -82,36 +82,36 @@ impl aoc24::DayInner<Day8, i32> for Day8 {
             }
         }
 
-        // Loop through pairs of coordinates each each letter group
         for list in locations.values() {
             for pairs in list.iter().combinations(2) {
-                let diff = pairs[0].clone() - pairs[1].clone();
-
-                let antinode1 = pairs[0].clone() + diff.clone();
-                let antinode2 = pairs[1].clone() - diff.clone();
-
-                if antinode1.is_in_bounds(width, height) {
-                    antinodes.insert(antinode1);
-                }
-                if antinode2.is_in_bounds(width, height) {
-                    antinodes.insert(antinode2);
-                }
+                let diff = pairs[0] - pairs[1];
 
                 for ii in 0..max_dimension {
-                    let antinode1 = pairs[0].clone() + diff.clone() * ii;
-                    let antinode2 = pairs[1].clone() - diff.clone() * ii;
-
-                    if antinode1.is_in_bounds(width, height) {
-                        resonant_antinodes.insert(antinode1);
+                    let antinode = pairs[0] + &(&diff * ii);
+                    if antinode.is_in_bounds(width, height) {
+                        if ii == 1 {
+                            antinodes.insert(antinode.clone());
+                        }
+                        resonant_antinodes.insert(antinode);
+                    } else {
+                        break;
                     }
-                    if antinode2.is_in_bounds(width, height) {
-                        resonant_antinodes.insert(antinode2);
+                }
+                for ii in 0..max_dimension {
+                    let antinode = pairs[1] - &(&diff * ii);
+                    if antinode.is_in_bounds(width, height) {
+                        if ii == 1 {
+                            antinodes.insert(antinode.clone());
+                        }
+                        resonant_antinodes.insert(antinode);
+                    } else {
+                        break;
                     }
                 }
             }
         }
 
         // And we're done!
-        (antinodes.len() as i32, resonant_antinodes.len() as i32)
+        (antinodes.len(), resonant_antinodes.len())
     }
 }
