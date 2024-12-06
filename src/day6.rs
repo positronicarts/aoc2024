@@ -284,13 +284,13 @@ impl aoc24::DayInner<Day6, i32> for Day6 {
             y: sy,
             direction: sd.clone(),
         });
-        let mut grid = starting_grid.clone();
+        let mut part1_grid = starting_grid.clone();
         while location.is_some() {
-            (location, _) = grid.move_location(location.unwrap());
+            (location, _) = part1_grid.move_location(location.unwrap());
         }
 
         // Count the number of visited locations
-        let visited = grid
+        let visited = part1_grid
             .grid
             .iter()
             .map(|row| row.iter().filter(|status| status.is_visited()).count())
@@ -299,8 +299,8 @@ impl aoc24::DayInner<Day6, i32> for Day6 {
         let mut loops = 0;
         for ii in 0..starting_grid.grid.len() {
             for jj in 0..starting_grid.grid[0].len() {
-                match starting_grid.grid[jj][ii] {
-                    GridStatus::Empty => {
+                match part1_grid.grid[jj][ii] {
+                    GridStatus::Visited(_) => {
                         let mut grid = starting_grid.clone();
                         grid.grid[jj][ii] = GridStatus::Occupied;
 
