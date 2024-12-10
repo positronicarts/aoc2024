@@ -18,10 +18,10 @@ fn main() {
     // day4::Day4 {}.run();
     // day5::Day5 {}.run();
     // day6::Day6 {}.run();
-    // day7::Day7 {}.run();
+    day7::Day7 {}.run();
     // day8::Day8 {}.run();
     // day9::Day9 {}.run();
-    day10::Day10 {}.run();
+    // day10::Day10 {}.run();
 }
 
 #[cfg(test)]

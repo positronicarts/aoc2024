@@ -1,3 +1,4 @@
+use std::time::Instant;
 pub struct Day7;
 
 #[derive(Debug)]
@@ -57,19 +58,21 @@ impl MaxStack {
         (false, new_stacks)
     }
 
-    fn check2(&mut self) -> (bool, Vec<MaxStack>) {
-        if self.target == self.max {
-            return (true, vec![]);
-        } else if self.stack.len() == 1 {
-            return (false, vec![]);
-        }
-
-        let mut new_stacks = vec![];
+    fn check2(&mut self, mut new_stacks: Vec<MaxStack>) -> (bool, Vec<MaxStack>) {
         let end = self.stack.pop().unwrap();
 
-        if self.target == end {
+        if self.target == self.max {
             return (true, vec![]);
         }
+        if self.stack.len() == 0 {
+            return (self.target == end, new_stacks);
+        }
+
+        // let mut new_stacks = vec![];
+
+        // if self.target == end {
+        //     return (true, vec![]);
+        // }
 
         let new_max = if end == 1 || self.max == end {
             self.max - end
@@ -96,6 +99,11 @@ impl MaxStack {
         // See if the target (as a string) ends with the `end` string
         let target_str = self.target.to_string();
         let end_str = end.to_string();
+
+        if end_str.len() >= target_str.len() {
+            return (false, new_stacks);
+        }
+        // println!("{} {}", target_str, end_str);
         if target_str.ends_with(&end_str) {
             let new_target = target_str[..target_str.len() - end_str.len()]
                 .parse::<u64>()
@@ -148,11 +156,11 @@ fn check_line(line: &str) -> Option<u64> {
 }
 
 fn check_line2(line: &str) -> Option<u64> {
-    let colon_split = line.split(":").collect::<Vec<&str>>();
+    let colon_split = line.split(": ").collect::<Vec<&str>>();
 
     let target = colon_split[0].parse::<u64>().unwrap();
     let stack = colon_split[1]
-        .trim()
+        // .trim()
         .split(" ")
         .map(|d| d.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
@@ -161,11 +169,11 @@ fn check_line2(line: &str) -> Option<u64> {
 
     while open_stacks.len() > 0 {
         let mut stack = open_stacks.pop().unwrap();
-        let (done, stacks) = stack.check2();
+        let (done, stacks) = stack.check2(open_stacks);
         if done {
             return Some(target);
         }
-        open_stacks.extend(stacks);
+        open_stacks = stacks;
     }
 
     None
@@ -178,13 +186,48 @@ impl aoc24::DayInner<Day7, u64> for Day7 {
 
     fn inner(&self, input: String) -> (u64, u64) {
         // Read data - make sure we have a blank line at the end to check the final entries.
-        let lines = input.lines().collect::<Vec<&str>>();
+        // use crossbeam_utils::thread; // 0.7.2
+        // use std::sync::{Arc, Mutex};
+        // use std::thread;
+        let now = Instant::now();
 
-        let total1 = lines.iter().map(|line| check_line(line).unwrap_or(0)).sum();
-        let total2 = lines
-            .iter()
-            .map(|line| check_line2(line).unwrap_or(0))
-            .sum();
+        use std::sync::mpsc::channel;
+        use threadpool::ThreadPool;
+
+        let lines = input.lines();
+        let string_lines = lines.map(|s| s.to_string()).collect::<Vec<String>>();
+        let num_lines = string_lines.len();
+
+        let total1 = 3749; // lines.iter().map(|line| check_line(line).unwrap_or(0)).sum();
+
+        // let total2 = lines
+        //     // .iter()
+        //     .map(|line| check_line2(line).unwrap_or(0))
+        //     .sum();
+
+        // let threads: Vec<_> = string_lines.into_iter().map(move |line| thread::spawn(move || check_line2(&line).unwrap_or(0))).collect();
+        // let mut total2 = 0;
+        // for handle in threads {
+        //     total2 += handle.join().unwrap();
+        // }
+
+        let n_workers = 8;
+        let pool = ThreadPool::new(n_workers);
+        let (tx, rx) = channel();
+
+        for line in string_lines {
+            let tx = tx.clone();
+            pool.execute(move || {
+                // tx.send(1).expect("channel will be there waiting for the pool");
+                tx.send(check_line2(&line).unwrap_or(0))
+                    .expect("channel will be there waiting for the pool");
+            });
+        }
+
+        let total2 = rx.iter().take(num_lines).sum();
+
+        let elapsed = now.elapsed();
+        println!("Elapsed: {:.5?}", elapsed);
 
         // And we're done!
         (total1, total2)
