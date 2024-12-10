@@ -37,7 +37,10 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
     fn inner(&self, input: String) -> (u64, u64) {
         // Read data - make sure we have a blank line at the end to check the final entries.
         // let _lines: Vec<&str> = input.lines().collect();
-        let data: Vec<u32> = input.chars().map(|l| l.to_string().parse::<u32>().unwrap()).collect();
+        let data: Vec<u32> = input
+            .chars()
+            .map(|l| l.to_string().parse::<u32>().unwrap())
+            .collect();
         let mut disc: Disc = Disc { data: Vec::new() };
 
         println!("{:?}", data.len());
@@ -65,11 +68,11 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
         let mut gap_index = 0;
 
         for ii in 0..p1_disc.data.len() {
-            if let Some(d) = p1_disc.data[len-1-ii] {
-                for jj in gap_index..len-1-ii    {
+            if let Some(d) = p1_disc.data[len - 1 - ii] {
+                for jj in gap_index..len - 1 - ii {
                     if p1_disc.data[jj].is_none() {
                         p1_disc.data[jj] = Some(d);
-                        p1_disc.data[len-1-ii] = None;
+                        p1_disc.data[len - 1 - ii] = None;
                         gap_index = jj;
                         break;
                     }
@@ -81,8 +84,7 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
         let mut last_d = -1;
 
         for ii in 0..disc.data.len() {
-            
-            if let Some(d) = disc.data[len-1-ii] {
+            if let Some(d) = disc.data[len - 1 - ii] {
                 // How my d's in a row?
                 // println!("Checking val {}", d);
                 if d as i32 == last_d {
@@ -90,8 +92,8 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
                 }
                 last_d = d as i32;
                 let mut data_len = 0;
-                for cc in 1..len-1-ii {
-                    if disc.data[len-1-ii-cc] != Some(d) {
+                for cc in 1..len - 1 - ii {
+                    if disc.data[len - 1 - ii - cc] != Some(d) {
                         data_len = cc;
                         break;
                     }
@@ -100,12 +102,12 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
                 // println!("Data len {}", data_len);
 
                 // Look for gap
-                for jj in 0..len-1-ii    {
+                for jj in 0..len - 1 - ii {
                     let mut gap_len = 0;
                     if disc.data[jj].is_none() {
                         // println!("Gap from {}", jj);
-                        for cc in 1..len-1-ii {
-                            if disc.data[jj+cc].is_some() {
+                        for cc in 1..len - 1 - ii {
+                            if disc.data[jj + cc].is_some() {
                                 gap_len = cc;
                                 // println!("Gap len {}", gap_len);
                                 break;
@@ -116,8 +118,8 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
                     if gap_len >= data_len {
                         // Move!
                         for cc in 0..data_len {
-                            disc.data[len-1-ii-cc] = None;
-                            disc.data[jj+cc] = Some(d);
+                            disc.data[len - 1 - ii - cc] = None;
+                            disc.data[jj + cc] = Some(d);
                         }
                         break;
                     }
@@ -125,7 +127,6 @@ impl aoc24::DayInner<Day9, u64> for Day9 {
             }
             // println!("{:?}", disc);
         }
-
 
         // And we're done!
         (p1_disc.checksum(), disc.checksum())
