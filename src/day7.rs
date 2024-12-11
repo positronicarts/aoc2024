@@ -3,68 +3,32 @@ pub struct Day7;
 
 #[derive(Debug)]
 struct MaxStack {
-    stack: Vec<u64>,
+    // stack: Vec<u64>,
+    index: usize,
     target: u64,
-    max: u64,
+    // max: u64,
 }
 
 impl MaxStack {
-    fn from(stack: &Vec<u64>, target: u64) -> MaxStack {
+    fn from(
+        // stack: &Vec<u64>, 
+        index: usize,
+        target: u64) -> MaxStack {
         MaxStack {
-            stack: stack.clone(),
+            // stack: stack.clone(),
+            index: index,
             target: target,
-            max: get_max(stack),
+            // max: 0, //get_max(stack),
         }
     }
 
-    fn check(&mut self) -> (bool, Vec<MaxStack>) {
-        if self.target == self.max {
-            return (true, vec![]);
-        } else if self.stack.len() == 1 {
-            return (false, vec![]);
-        } else if self.target > self.max {
-            return (false, vec![]);
-        }
+    fn check(&mut self, stack: &Vec<u64>, mut new_stacks: Vec<MaxStack>) -> (bool, Vec<MaxStack>) {
+        let end = stack[self.index];
 
-        let mut new_stacks = vec![];
-        let end = self.stack.pop().unwrap();
-
-        if self.target == end {
-            return (true, vec![]);
-        }
-
-        let new_max = if end == 1 || self.max == end {
-            self.max - end
-        } else {
-            self.max / end
-        };
-
-        if (self.target % end) == 0 {
-            new_stacks.push(MaxStack {
-                stack: self.stack.clone(),
-                target: self.target / end,
-                max: new_max,
-            });
-        }
-
-        if self.target > end {
-            new_stacks.push(MaxStack {
-                stack: self.stack.clone(),
-                target: self.target - end,
-                max: new_max,
-            });
-        }
-
-        (false, new_stacks)
-    }
-
-    fn check2(&mut self, mut new_stacks: Vec<MaxStack>) -> (bool, Vec<MaxStack>) {
-        let end = self.stack.pop().unwrap();
-
-        if self.target == self.max {
-            return (true, vec![]);
-        }
-        if self.stack.len() == 0 {
+        // if self.target == self.max {
+        //     return (true, vec![]);
+        // }
+        if self.index == 0 {
             return (self.target == end, new_stacks);
         }
 
@@ -74,109 +38,93 @@ impl MaxStack {
         //     return (true, vec![]);
         // }
 
-        let new_max = if end == 1 || self.max == end {
-            self.max - end
-        } else {
-            self.max / end
-        };
+        // let new_max = if end == 1 || self.max == end {
+        //     self.max - end
+        // } else {
+        //     self.max / end
+        // };
 
         if (self.target % end) == 0 {
             new_stacks.push(MaxStack {
-                stack: self.stack.clone(),
+                // stack: self.stack.clone(),
+                index: self.index - 1,
                 target: self.target / end,
-                max: new_max,
+                // max: 0,
             });
         }
 
         if self.target > end {
             new_stacks.push(MaxStack {
-                stack: self.stack.clone(),
+                // stack: self.stack.clone(),
+                index: self.index - 1,
                 target: self.target - end,
-                max: new_max,
+                // max: 0,
             });
         }
 
         // See if the target (as a string) ends with the `end` string
-        let target_str = self.target.to_string();
-        let end_str = end.to_string();
-
-        if end_str.len() >= target_str.len() {
-            return (false, new_stacks);
+        let mut end_len = 1;
+        loop {
+            if end >= end_len {
+                end_len *= 10;
+            } else {
+                break;
+            }
         }
-        // println!("{} {}", target_str, end_str);
-        if target_str.ends_with(&end_str) {
-            let new_target = target_str[..target_str.len() - end_str.len()]
-                .parse::<u64>()
-                .unwrap();
+        if self.target % end_len == end {
             new_stacks.push(MaxStack {
-                stack: self.stack.clone(),
-                target: new_target,
-                max: new_max,
+                // stack: self.stack.clone(),
+                index: self.index - 1,
+                target: self.target / end_len,
+                // max: 0,
             });
         }
+
+        // let target_str = self.target.to_string();
+        // let end_str = end.to_string();
+
+        // if end_str.len() >= target_str.len() {
+        //     return (false, new_stacks);
+        // }
+        // // println!("{} {}", target_str, end_str);
+        // if target_str.ends_with(&end_str) {
+        //     let new_target = target_str[..target_str.len() - end_str.len()]
+        //         .parse::<u64>()
+        //         .unwrap();
+        //     new_stacks.push(MaxStack {
+        //         // stack: self.stack.clone(),
+        //         index: self.index - 1,
+        //         target: new_target,
+        //         // max: 0,
+        //     });
+        // }
 
         (false, new_stacks)
     }
 }
 
-fn get_max(stack: &Vec<u64>) -> u64 {
-    let mut max = stack[0];
-    for i in 1..stack.len() {
-        if stack[i] == 1 || max == 1 {
-            max += stack[i];
-        } else {
-            max *= stack[i];
-        }
-    }
-    max
-}
-
-fn check_line(line: &str) -> Option<u64> {
-    let colon_split = line.split(":").collect::<Vec<&str>>();
-
-    let target = colon_split[0].parse::<u64>().unwrap();
-    let stack = colon_split[1]
-        .trim()
-        .split(" ")
-        .map(|d| d.parse::<u64>().unwrap())
-        .collect::<Vec<u64>>();
-
-    let mut open_stacks = vec![MaxStack::from(&stack, target)];
-
-    while open_stacks.len() > 0 {
-        let mut stack = open_stacks.pop().unwrap();
-        let (done, stacks) = stack.check();
-        if done {
-            return Some(target);
-        }
-        open_stacks.extend(stacks);
-    }
-
-    None
-}
-
-fn check_line2(line: &str) -> Option<u64> {
+fn check_line(line: &str) -> u64 {
     let colon_split = line.split(": ").collect::<Vec<&str>>();
 
     let target = colon_split[0].parse::<u64>().unwrap();
-    let stack = colon_split[1]
+    let full_stack = colon_split[1]
         // .trim()
         .split(" ")
         .map(|d| d.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
 
-    let mut open_stacks = vec![MaxStack::from(&stack, target)];
+    let mut open_stacks = vec![MaxStack::from(full_stack.len() -1, target)];
 
-    while open_stacks.len() > 0 {
+    while !open_stacks.is_empty() {
         let mut stack = open_stacks.pop().unwrap();
-        let (done, stacks) = stack.check2(open_stacks);
+        let (done, stacks) = stack.check(&full_stack, open_stacks);
         if done {
-            return Some(target);
+            return target;
         }
         open_stacks = stacks;
     }
 
-    None
+    0
 }
 
 impl aoc24::DayInner<Day7, u64> for Day7 {
@@ -191,19 +139,19 @@ impl aoc24::DayInner<Day7, u64> for Day7 {
         // use std::thread;
         let now = Instant::now();
 
-        use std::sync::mpsc::channel;
-        use threadpool::ThreadPool;
+        // use std::sync::mpsc::channel;
+        // use threadpool::ThreadPool;
 
         let lines = input.lines();
-        let string_lines = lines.map(|s| s.to_string()).collect::<Vec<String>>();
-        let num_lines = string_lines.len();
+        // let string_lines = lines.map(|s| s.to_string()).collect::<Vec<String>>();
+        // let num_lines = string_lines.len();
 
         let total1 = 3749; // lines.iter().map(|line| check_line(line).unwrap_or(0)).sum();
 
-        // let total2 = lines
-        //     // .iter()
-        //     .map(|line| check_line2(line).unwrap_or(0))
-        //     .sum();
+        let total2 = lines
+            // .iter()
+            .map(|line| check_line(line))
+            .sum();
 
         // let threads: Vec<_> = string_lines.into_iter().map(move |line| thread::spawn(move || check_line2(&line).unwrap_or(0))).collect();
         // let mut total2 = 0;
@@ -211,20 +159,19 @@ impl aoc24::DayInner<Day7, u64> for Day7 {
         //     total2 += handle.join().unwrap();
         // }
 
-        let n_workers = 8;
-        let pool = ThreadPool::new(n_workers);
-        let (tx, rx) = channel();
+        // let n_workers = 2;
+        // let pool = ThreadPool::new(n_workers);
+        // let (tx, rx) = channel();
 
-        for line in string_lines {
-            let tx = tx.clone();
-            pool.execute(move || {
-                // tx.send(1).expect("channel will be there waiting for the pool");
-                tx.send(check_line2(&line).unwrap_or(0))
-                    .expect("channel will be there waiting for the pool");
-            });
-        }
+        // for line in string_lines {
+        //     let tx = tx.clone();
+        //     pool.execute(move || {
+        //         // tx.send(1).expect("channel will be there waiting for the pool");
+        //         tx.send(check_line(&line)).expect("foo");
+        //     });
+        // }
 
-        let total2 = rx.iter().take(num_lines).sum();
+        // let total2 = rx.iter().take(num_lines).sum();
 
         let elapsed = now.elapsed();
         println!("Elapsed: {:.5?}", elapsed);
