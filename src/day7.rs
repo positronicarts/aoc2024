@@ -137,6 +137,9 @@ impl aoc24::DayInner<Day7, u64> for Day7 {
         // use crossbeam_utils::thread; // 0.7.2
         // use std::sync::{Arc, Mutex};
         // use std::thread;
+
+        // use rayon::prelude::*;
+
         let now = Instant::now();
 
         // use std::sync::mpsc::channel;
