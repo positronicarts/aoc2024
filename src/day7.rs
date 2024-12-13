@@ -11,9 +11,10 @@ struct MaxStack {
 
 impl MaxStack {
     fn from(
-        // stack: &Vec<u64>, 
+        // stack: &Vec<u64>,
         index: usize,
-        target: u64) -> MaxStack {
+        target: u64,
+    ) -> MaxStack {
         MaxStack {
             // stack: stack.clone(),
             index: index,
@@ -103,23 +104,24 @@ impl MaxStack {
     }
 }
 
-fn check_line(line: &str) -> u64 {
-    let colon_split = line.split(": ").collect::<Vec<&str>>();
+fn check_line(input: &(Vec<u64>, u64)) -> u64 {
+    let (full_stack, target) = input;
+    // let colon_split = line.split(": ").collect::<Vec<&str>>();
 
-    let target = colon_split[0].parse::<u64>().unwrap();
-    let full_stack = colon_split[1]
-        // .trim()
-        .split(" ")
-        .map(|d| d.parse::<u64>().unwrap())
-        .collect::<Vec<u64>>();
+    // let target = colon_split[0].parse::<u64>().unwrap();
+    // let full_stack = colon_split[1]
+    //     // .trim()
+    //     .split(" ")
+    //     .map(|d| d.parse::<u64>().unwrap())
+    //     .collect::<Vec<u64>>();
 
-    let mut open_stacks = vec![MaxStack::from(full_stack.len() -1, target)];
+    let mut open_stacks = vec![MaxStack::from(full_stack.len() - 1, *target)];
 
     while !open_stacks.is_empty() {
         let mut stack = open_stacks.pop().unwrap();
         let (done, stacks) = stack.check(&full_stack, open_stacks);
         if done {
-            return target;
+            return *target;
         }
         open_stacks = stacks;
     }
@@ -140,20 +142,35 @@ impl aoc24::DayInner<Day7, u64> for Day7 {
 
         // use rayon::prelude::*;
 
-        let now = Instant::now();
-
         // use std::sync::mpsc::channel;
         // use threadpool::ThreadPool;
 
         let lines = input.lines();
+
+        let vecs: Vec<(Vec<u64>, u64)> = lines
+            .map(|line| {
+                let colon_split = line.split(": ").collect::<Vec<&str>>();
+
+                let target = colon_split[0].parse::<u64>().unwrap();
+                let full_stack = colon_split[1]
+                    // .trim()
+                    .split(" ")
+                    .map(|d| d.parse::<u64>().unwrap())
+                    .collect::<Vec<u64>>();
+                (full_stack, target)
+            })
+            .collect();
+
         // let string_lines = lines.map(|s| s.to_string()).collect::<Vec<String>>();
         // let num_lines = string_lines.len();
 
+        let now = Instant::now();
+
         let total1 = 3749; // lines.iter().map(|line| check_line(line).unwrap_or(0)).sum();
 
-        let total2 = lines
-            // .iter()
-            .map(|line| check_line(line))
+        let total2 = vecs
+            .iter()
+            .map(|vec| check_line(vec))
             .sum();
 
         // let threads: Vec<_> = string_lines.into_iter().map(move |line| thread::spawn(move || check_line2(&line).unwrap_or(0))).collect();
