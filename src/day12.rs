@@ -1,4 +1,4 @@
-use std::{collections::HashSet, hash::Hash};
+use std::collections::HashSet;
 
 pub struct Day12;
 
@@ -82,59 +82,37 @@ impl Grid {
             let mut sides = 0;
             let mut vc = 0;
             let mut hc = 0;
-            let mut adj_corners = 0;
             let mut up = false;
             let mut down = false;
             let mut left = false;
             let mut right = false;
-            // area += 1;
-            // println!("Checking ({},{})", x, y);
-            if *x == 0 || !antishape.contains(&(*x - 1, *y)) {
-                // println!("{} {} is on the edge", x, y);
 
+            if *x == 0 || !antishape.contains(&(*x - 1, *y)) {
                 if *x > 0 && shape.contains(&(*x - 1, *y)) {
                     hc += 1;
                     left = true;
                     sides += 1;
-                    if corner_locations.contains(&(*x - 1, *y)) {
-                        adj_corners += 1;
-                    }
                 }
-                // sides += 1;
             }
             if *x == self.width - 1 || !antishape.contains(&(*x + 1, *y)) {
-                // println!("{} {} is on the edge", x, y);
-
                 if *x < self.width - 1 && shape.contains(&(*x + 1, *y)) {
                     hc += 1;
                     sides += 1;
                     right = true;
-                    if corner_locations.contains(&(*x + 1, *y)) {
-                        adj_corners += 1;
-                    }
                 }
             }
             if *y == 0 || !antishape.contains(&(*x, *y - 1)) {
-                // println!("{} {} is on the edge", x, y);
-
                 if *y > 0 && shape.contains(&(*x, *y - 1)) {
                     vc += 1;
                     up = true;
                     sides += 1;
-                    if corner_locations.contains(&(*x, *y - 1)) {
-                        adj_corners += 1;
-                    }
                 }
             }
             if *y == self.height - 1 || !antishape.contains(&(*x, *y + 1)) {
-                // println!("{} {} is on the edge", x, y);
                 if *y < self.height - 1 && shape.contains(&(*x, *y + 1)) {
                     vc += 1;
                     down = true;
                     sides += 1;
-                    if corner_locations.contains(&(*x, *y + 1)) {
-                        adj_corners += 1;
-                    }
                 }
             }
 
@@ -149,62 +127,29 @@ impl Grid {
             if sides == 2 {
                 println!("{} {} is a convex 2 corner", x, y);
                 if vc == 1 && hc == 1 {
-                //     // Won't count if it's "blocked" - i.e. the opposite corner is also a corner
-                //     if (up && right) {
-                //         println!("Up right corner");
-                //         if !antishape.contains(&(*x + 1, *y - 1)) {
-                //             println!("Not blocked");
-                //             corners += 1;
-                //         }
-                //     }
-                //     if (up && left) {
-                //         println!("Up left corner");
-                //         if !antishape.contains(&(*x - 1, *y - 1)) {
-                //             println!("Not blocked");
-                //             corners += 1;
-                //         }
-                //     }
-                //     if (down && right) {
-                //         println!("Down right corner");
-                //         if !antishape.contains(&(*x + 1, *y + 1)) {
-                //             println!("Not blocked");
-                //             corners += 1;
-                //         }
-                //     }
-                //     if (down && left) {
-                //         println!("Down left corner");
-                //         if !antishape.contains(&(*x - 1, *y + 1)) {
-                //             println!("Not blocked");
-                //             corners += 1;
-                //         }
-                //     }
                     corners += 1;
                 }
             }
 
-            if (up && right) {
-                // println!("Up right corner");
+            if up && right {
                 if antishape.contains(&(*x + 1, *y - 1)) {
                     println!("Blocked up right");
                     corners -= 1;
                 }
             }
-            if (up && left) {
-                // println!("Up left corner");
+            if up && left {
                 if antishape.contains(&(*x - 1, *y - 1)) {
                     println!("Blocked up left");
                     corners -= 1;
                 }
             }
-            if (down && right) {
-                // println!("Down right corner");
+            if down && right {
                 if antishape.contains(&(*x + 1, *y + 1)) {
                     println!("Blocked down right");
                     corners -= 1;
                 }
             }
-            if (down && left) {
-                // println!("Down left corner");
+            if down && left {
                 if antishape.contains(&(*x - 1, *y + 1)) {
                     println!("Blocked down left");
                     corners -= 1;
