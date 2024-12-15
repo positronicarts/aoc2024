@@ -57,7 +57,7 @@ fn max_consecutive_ones(robots: &Vec<Robot>, width: i32, height: i32) -> usize {
                     if len > max {
                         max = len as usize;
                     }
-                } 
+                }
                 one = false;
             }
         }
