@@ -88,7 +88,7 @@ struct Vector {
     location: (i32, i32),
     direction: Direction,
     cost: Option<i32>,
-    routes: Vec<Vec<(i32, i32)>>,
+    routes: Vec<(i32, i32)>,
 }
 
 struct Grid {
@@ -128,13 +128,6 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
             grid.cells.push(cells);
         }
 
-        // Find the start
-        // let mut location = Vector {
-        //     location: (0, 0),
-        //     direction: Direction::Right,
-        //     cost: None,
-        //     routes: Vec::new(),
-        // };
         let mut end = (0, 0);
         let mut unvisited_set = Vec::new();
         let mut visited_set = Vec::new();
@@ -170,7 +163,7 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
                         location: (x as i32, y as i32),
                         direction: Direction::Right,
                         cost: Some(0),
-                        routes: vec![vec![(x as i32, y as i32)]],
+                        routes: vec![(x as i32, y as i32)],
                     });
 
                     unvisited_set.push(Vector {
@@ -245,12 +238,14 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
                         }
 
                         (*v).cost = Some(new_cost);
-                        // v.routes.push(vec![vector.routes.clone()]);
 
-                        for route in vector.routes.iter() {
-                            let mut new_route = route.clone();
-                            new_route.push(v.location);
-                            v.routes.push(new_route);
+                        if !v.routes.contains(&v.location) {
+                            v.routes.push(v.location);
+                        }
+                        for r in vector.routes.iter() {
+                            if !v.routes.contains(r) {
+                                v.routes.push(*r);
+                            }
                         }
                     }
                 }
@@ -266,9 +261,10 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
 
                             (*v).cost = Some(new_cost);
 
-                            for route in vector.routes.iter() {
-                                let new_route = route.clone();
-                                v.routes.push(new_route);
+                            for r in vector.routes.iter() {
+                                if !v.routes.contains(r) {
+                                    v.routes.push(*r);
+                                }
                             }
                         }
                     }
@@ -283,11 +279,10 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
         let mut visited_locations = HashSet::new();
         for v in visited_set.iter() {
             if v.location == end && v.cost == Some(cost1) {
-                for route in v.routes.iter() {
-                    for r in route.iter() {
-                        visited_locations.insert(*r);
-                        grid.cells[r.1 as usize][r.0 as usize] = CellState::Route;
-                    }
+
+                for r in v.routes.iter() {
+                    visited_locations.insert(*r);
+                    grid.cells[r.1 as usize][r.0 as usize] = CellState::Route;
                 }
             }
         }
