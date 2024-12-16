@@ -190,20 +190,18 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
 
         let mut cost1: i32 = 0;
 
-        // Implement Dikstra's algorithm
+        // Implement Dijkstra's algorithm
         loop {
             // Find the element with the lowest cost
             let mut lowest_cost = None;
             let mut lowest_vector = None;
             let mut lowest_index = 0;
 
-            let clone = unvisited_set.clone();
-
-            for (index, vector) in clone.iter().enumerate() {
+            for (index, vector) in unvisited_set.iter().enumerate() {
                 if let Some(cost) = vector.cost {
                     if lowest_cost.is_none() || cost < lowest_cost.unwrap() {
                         lowest_cost = Some(cost);
-                        lowest_vector = Some(vector);
+                        lowest_vector = Some(vector.clone());
                         lowest_index = index;
                     }
                 }
@@ -213,7 +211,6 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
                 break;
             }
 
-            // Remove from unvisited set
             let vector = lowest_vector.unwrap();
 
             if vector.location == end {
@@ -221,7 +218,6 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
                 if cost < cost1 || cost1 == 0 {
                     cost1 = cost;
                 }
-                // break;
             }
 
             // Update the adjacent costs
@@ -271,7 +267,7 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
                 }
             }
 
-            visited_set.push(vector.clone());
+            visited_set.push(vector);
             unvisited_set.remove(lowest_index);
         }
 
