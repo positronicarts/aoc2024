@@ -275,7 +275,6 @@ impl aoc24::DayInner<Day16, i32> for Day16 {
         let mut visited_locations = HashSet::new();
         for v in visited_set.iter() {
             if v.location == end && v.cost == Some(cost1) {
-
                 for r in v.routes.iter() {
                     visited_locations.insert(*r);
                     grid.cells[r.1 as usize][r.0 as usize] = CellState::Route;
