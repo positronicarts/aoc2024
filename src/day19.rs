@@ -8,9 +8,7 @@ impl aoc24::DayInner<Day19, u64> for Day19 {
     }
 
     fn inner(&self, input: String) -> (u64, u64) {
-        // Read data - make sure we have a blank line at the end to check the final entries.
         let mut lines = input.lines();
-
         let seeds = lines.next().unwrap().split(", ").collect::<Vec<_>>();
         lines.next(); // Skip blank line
 
@@ -24,17 +22,11 @@ impl aoc24::DayInner<Day19, u64> for Day19 {
                 yes_no: &mut HashMap<&'a str, u64>,
                 seeds: &Vec<&'a str>,
             ) -> u64 {
-                if line.is_empty() {
-                    return 0;
-                }
-
-                let checked = yes_no.get(line);
-                if let Some(b) = checked {
+                if let Some(b) = yes_no.get(line) {
                     return *b;
                 }
 
                 let mut count = 0;
-
                 for seed in seeds.iter() {
                     if line == *seed {
                         count += 1;
