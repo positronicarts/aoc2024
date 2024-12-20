@@ -9,8 +9,8 @@ mod day16;
 mod day17;
 mod day18;
 mod day19;
-mod day20;
 mod day2;
+mod day20;
 mod day3;
 mod day4;
 mod day5;
@@ -47,8 +47,8 @@ fn main() {
 #[cfg(test)]
 mod test {
     use super::{
-        day1, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day20, day2, day3,
-        day4, day5, day6, day7, day8, day9, Day,
+        day1, day10, day11, day12, day13, day14, day15, day16, day17, day18, day19, day2, day20,
+        day3, day4, day5, day6, day7, day8, day9, Day,
     };
 
     #[test]
