@@ -1,3 +1,5 @@
+use itertools::Itertools;
+use num::traits::ops::inv;
 use std::collections::HashMap;
 
 pub struct Day21;
@@ -17,6 +19,14 @@ struct Robot {
 }
 
 impl Robot {
+    fn move_str(&mut self, path: &str) -> i64 {
+        let mut cost = 0;
+        for c in path.chars() {
+            cost += self.move_to(c);
+        }
+        cost
+    }
+
     fn move_to(&mut self, target: char) -> i64 {
         let start_x = self.x;
         let start_y = self.y;
@@ -25,9 +35,6 @@ impl Robot {
             panic!("Cheated!!");
         }
         if self.controller.is_none() {
-            // Can move directly
-            // Find the target coordinates, then the manhattan distance from here to there
-            // print!("{}", target);
             return 1;
         } else {
             // Check the cache
@@ -52,92 +59,76 @@ impl Robot {
                 return *cost;
             }
 
-            let mut cost: i64 = 0;
+            // let mut cost: i64 = 0;
             let controller_box = self.controller.as_mut().unwrap();
             let controller: &mut Robot = controller_box.as_mut();
 
             // Generally prefer L than D then R then U
 
-            // Start trying left, unless we'll get blocked
+            // Try all the different paths...
+            // Get path elements
+            let mut path = String::new();
             while self.x > tx {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-
-                if self.x > tx {
-                    if self.keypad.keys[self.y as usize][tx as usize] != '.' {
-                        cost += controller.move_to('<');
-                        self.x -= 1;
-                    } else {
-                        break;
-                    }
-                }
+                path += "<";
+                self.x -= 1;
             }
-
-            // Then try down, unless it's blocked
-            while self.y < ty {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-
-                if self.y < ty {
-                    if self.keypad.keys[ty as usize][self.x as usize] != '.' {
-                        cost += (*controller).move_to('v');
-                        self.y += 1;
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            // Right can't really be blocked
             while self.x < tx {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-
-                if self.x < tx {
-                    if self.keypad.keys[self.y as usize][tx as usize] != '.' {
-                        cost += controller.move_to('>');
-                        self.x += 1;
-                    } else {
-                        panic!("Huh?");
-                    }
-                }
+                path += ">";
+                self.x += 1;
             }
-
-            // Up
             while self.y > ty {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-                if self.y > ty {
-                    if self.keypad.keys[ty as usize][self.x as usize] != '.' {
-                        cost += (*controller).move_to('^');
-                        self.y -= 1;
-                    } else {
-                        panic!("Huh?");
+                path += "^";
+                self.y -= 1;
+            }
+            while self.y < ty {
+                path += "v";
+                self.y += 1;
+            }
+
+            // Get different permutations of the path
+            let mut cost = -1;
+
+            for path in path.chars().permutations(path.len()) {
+                let path = path.iter().collect::<String>() + "A";
+
+                // Check the path is valid
+                let mut test_x = start_x;
+                let mut test_y = start_y;
+
+                let mut invalid = false;
+                for c in path.chars() {
+                    if self.keypad.keys[test_y as usize][test_x as usize] == '.' {
+                        invalid = true;
+                    }
+                    if c == 'A' {
+                        break;
+                    }
+                    if c == '<' {
+                        test_x -= 1;
+                    } else if c == '>' {
+                        test_x += 1;
+                    } else if c == '^' {
+                        test_y -= 1;
+                    } else if c == 'v' {
+                        test_y += 1;
                     }
                 }
-            }
-
-            // Left might have got blocked (we'll have sorted verticality by this point)
-            while self.x > tx {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
+                if invalid {
+                    continue;
                 }
-                if self.x > tx {
-                    cost += controller.move_to('<');
-                    self.x -= 1;
+
+                let this_cost = controller.move_str(&path);
+                if cost == -1 || this_cost < cost {
+                    cost = this_cost;
                 }
             }
 
-            cost += controller.move_to('A');
-
-            // Update the cache
-            self.cache.insert(((start_x, start_y), (tx, ty)), cost);
-            return cost;
+            if cost > 0 {
+                self.cache.insert(((start_x, start_y), (tx, ty)), cost);
+                return cost;
+            }
         }
+        panic!("Negative cost!");
     }
 }
 
