@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct Day21;
 
 #[derive(Clone)]
@@ -11,17 +13,24 @@ struct Robot {
     y: i32,
     keypad: KeyPad,
     controller: Option<Box<Robot>>,
+    cache: HashMap<((i32, i32), (i32, i32)), i64>,
 }
 
 impl Robot {
-    fn move_to(&mut self, target: char) -> i32 {
+    fn move_to(&mut self, target: char) -> i64 {
+        let start_x = self.x;
+        let start_y = self.y;
+
+        if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+            panic!("Cheated!!");
+        }
         if self.controller.is_none() {
             // Can move directly
             // Find the target coordinates, then the manhattan distance from here to there
-            print!("{}", target);
+            // print!("{}", target);
             return 1;
         } else {
-            // Ruh-roh, need the controller to move to the direction first!
+            // Check the cache
             let mut tx = -1;
             let mut ty = -1;
             for (y, row) in self.keypad.keys.iter().enumerate() {
@@ -32,80 +41,153 @@ impl Robot {
                     }
                 }
             }
-
             if tx == -1 || ty == -1 {
                 panic!("Target not found!");
             }
 
-            let mut cost = 0;
+            if let Some(cost) = self.cache.get(&((start_x, start_y), (tx, ty))) {
+                // println!(".");
+                self.x = tx;
+                self.y = ty;
+                return *cost;
+            }
+
+            let mut cost: i64 = 0;
             let controller_box = self.controller.as_mut().unwrap();
             let controller: &mut Robot = controller_box.as_mut();
 
-            // Generally prefer L/R over U/D
-            // The exception is if that will move us through a '.' on the keypad
-            if self.keypad.keys[self.y as usize][tx as usize] != '.' {
-                while self.x != tx {
-                    if self.x < tx {
-                        cost += controller.move_to('>');
-                        self.x += 1;
-                    }
-                    if self.x > tx {
+            // Generally prefer L than D then R then U
+
+            // Start trying left, unless we'll get blocked
+            while self.x > tx {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+
+                if self.x > tx {
+                    if self.keypad.keys[self.y as usize][tx as usize] != '.' {
                         cost += controller.move_to('<');
                         self.x -= 1;
+                    } else {
+                        break;
                     }
                 }
             }
-            // while self.x != tx {
-            //     if self.x < tx {
-            //         if self.keypad.keys[self.y as usize][self.x as usize + 1] != '.' {
-            //             cost += controller.move_to('>');
-            //             self.x += 1;
-            //         } else {
-            //             break;
-            //         }
-            //     } else if self.x > tx {
-            //         if self.keypad.keys[self.y as usize][self.x as usize - 1] != '.' {
-            //             cost += controller.move_to('<');
-            //             self.x -= 1;
-            //         } else {
-            //             break;
-            //         }
-            //     }
-            // }
 
-            while self.y != ty {
+            // Then try down, unless it's blocked
+            while self.y < ty {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+
                 if self.y < ty {
-                    cost += (*controller).move_to('v');
-                    self.y += 1;
-                } else {
-                    cost += (*controller).move_to('^');
-                    self.y -= 1;
+                    if self.keypad.keys[ty as usize][self.x as usize] != '.' {
+                        cost += (*controller).move_to('v');
+                        self.y += 1;
+                    } else {
+                        // panic!("Huh? ({},{})->({},{})", start_x, start_y, tx, ty);
+                        break;
+                    }
                 }
             }
 
-            while self.x != tx {
+            // Right can't really be blocked
+            while self.x < tx {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+
                 if self.x < tx {
-                    cost += controller.move_to('>');
-                    self.x += 1;
-                } else if self.x > tx {
+                    if self.keypad.keys[self.y as usize][tx as usize] != '.' {
+                        cost += controller.move_to('>');
+                        self.x += 1;
+                    } else {
+                        panic!("Huh?");
+                        break;
+                    }
+                }
+            }
+
+            // Up
+            while self.y > ty {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+                if self.y > ty {
+                    if self.keypad.keys[ty as usize][self.x as usize] != '.' {
+                        cost += (*controller).move_to('^');
+                        self.y -= 1;
+                    } else {
+                        panic!("Huh?");
+                        break;
+                    }
+                }
+            }
+
+            // Left might have got blocked (we'll have sorted verticality by this point)
+            while self.x > tx {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+                if self.x > tx {
                     cost += controller.move_to('<');
                     self.x -= 1;
                 }
             }
 
+            while self.y < ty {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+                if self.y < ty {
+                    cost += (*controller).move_to('v');
+                    self.y += 1;
+                }
+            }
+
+            while self.y != ty {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+                if self.y < ty {
+                    cost += (*controller).move_to('v');
+                    self.y += 1;
+                }
+                if self.y > ty {
+                    cost += (*controller).move_to('^');
+                    self.y -= 1;
+                }
+            }
+
+            while self.y != ty {
+                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
+                    panic!("Cheated!!");
+                }
+                if self.y < ty {
+                    cost += (*controller).move_to('v');
+                    self.y += 1;
+                }
+                if self.y > ty {
+                    cost += (*controller).move_to('^');
+                    self.y -= 1;
+                }
+            }
+
             cost += controller.move_to('A');
 
+            // Update the cache
+            self.cache.insert(((start_x, start_y), (tx, ty)), cost);
             return cost;
         }
     }
 }
 
-impl aoc24::DayInner<Day21, i32> for Day21 {
+impl aoc24::DayInner<Day21, i64> for Day21 {
     fn day(&self) -> i32 {
         21
     }
 
-    fn inner(&self, input: String) -> (i32, i32) {
+    fn inner(&self, input: String) -> (i64, i64) {
         // Read data - make sure we have a blank line at the end to check the final entries.
         let lines = input.lines();
 
@@ -126,51 +208,56 @@ impl aoc24::DayInner<Day21, i32> for Day21 {
         };
 
         let part_1 = lines
-            .map(|code| part1(&number_keypad, &input_keypad, code))
+            .clone()
+            .map(|code| part1(&number_keypad, &input_keypad, code, 2))
             .sum();
-        // let part_1 = part1(&number_keypad, &input_keypad, "379A");
+        let part_2 = lines
+            .map(|code| part1(&number_keypad, &input_keypad, code, 25))
+            .sum();
+
         // And we're done!
-        (part_1, 0)
+        (part_1, part_2)
     }
 }
 
-fn part1(number_keypad: &KeyPad, input_keypad: &KeyPad, code: &str) -> i32 {
-    let robot_4 = Robot {
+fn part1(number_keypad: &KeyPad, input_keypad: &KeyPad, code: &str, num: i32) -> i64 {
+    let human = Robot {
         x: 2,
-        y: 9,
+        y: 0,
         keypad: input_keypad.clone(),
         controller: None,
+        cache: HashMap::new(),
     };
-    let robot_3 = Robot {
-        x: 2,
-        y: 0,
-        keypad: input_keypad.clone(),
-        controller: Some(Box::new(robot_4)),
-    };
-    let robot_2 = Robot {
-        x: 2,
-        y: 0,
-        keypad: input_keypad.clone(),
-        controller: Some(Box::new(robot_3)),
-    };
-    let mut robot_1 = Robot {
+
+    let mut current = human;
+    for _ in 0..num {
+        let next = Robot {
+            x: 2,
+            y: 0,
+            keypad: input_keypad.clone(),
+            controller: Some(Box::new(current)),
+            cache: HashMap::new(),
+        };
+        current = next;
+    }
+    let mut final_robot = Robot {
         x: 2,
         y: 3,
         keypad: number_keypad.clone(),
-        controller: Some(Box::new(robot_2)),
+        controller: Some(Box::new(current)),
+        cache: HashMap::new(),
     };
 
     let mut button_presses = 0;
     for c in code.chars() {
-        button_presses += robot_1.move_to(c);
-        println!();
+        button_presses += final_robot.move_to(c);
     }
 
-    let numerical_code: i32 = code[..code.len() - 1].parse().unwrap();
+    let numerical_code: i64 = code[..code.len() - 1].parse().unwrap();
     let product = button_presses * numerical_code;
     println!(
-        "{} -> {} * {} = {}",
+        "{}: {} * {} = {}",
         code, button_presses, numerical_code, product
     );
-    button_presses * numerical_code
+    product
 }
