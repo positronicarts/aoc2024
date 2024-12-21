@@ -85,7 +85,6 @@ impl Robot {
                         cost += (*controller).move_to('v');
                         self.y += 1;
                     } else {
-                        // panic!("Huh? ({},{})->({},{})", start_x, start_y, tx, ty);
                         break;
                     }
                 }
@@ -103,7 +102,6 @@ impl Robot {
                         self.x += 1;
                     } else {
                         panic!("Huh?");
-                        break;
                     }
                 }
             }
@@ -119,7 +117,6 @@ impl Robot {
                         self.y -= 1;
                     } else {
                         panic!("Huh?");
-                        break;
                     }
                 }
             }
@@ -132,44 +129,6 @@ impl Robot {
                 if self.x > tx {
                     cost += controller.move_to('<');
                     self.x -= 1;
-                }
-            }
-
-            while self.y < ty {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-                if self.y < ty {
-                    cost += (*controller).move_to('v');
-                    self.y += 1;
-                }
-            }
-
-            while self.y != ty {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-                if self.y < ty {
-                    cost += (*controller).move_to('v');
-                    self.y += 1;
-                }
-                if self.y > ty {
-                    cost += (*controller).move_to('^');
-                    self.y -= 1;
-                }
-            }
-
-            while self.y != ty {
-                if self.keypad.keys[self.y as usize][self.x as usize] == '.' {
-                    panic!("Cheated!!");
-                }
-                if self.y < ty {
-                    cost += (*controller).move_to('v');
-                    self.y += 1;
-                }
-                if self.y > ty {
-                    cost += (*controller).move_to('^');
-                    self.y -= 1;
                 }
             }
 
