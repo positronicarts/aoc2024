@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use num::traits::ops::inv;
 use std::collections::HashMap;
 
 pub struct Day21;
