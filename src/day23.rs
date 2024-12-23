@@ -92,6 +92,7 @@ impl aoc24::DayInner<Day23, i32> for Day23 {
                         }
                         strings.sort();
                         println!("{}: {:?}", candidate_subset.len(), strings.join(","));
+                        break;
                     }
                 }
             }
