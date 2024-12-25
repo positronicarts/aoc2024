@@ -50,8 +50,8 @@ fn main() {
     // day21::Day21 {}.run();
     // day22::Day22 {}.run();
     // day23::Day23 {}.run();
-    // day24::Day24 {}.run();
-    day25::Day25 {}.run();
+    day24::Day24 {}.run();
+    // day25::Day25 {}.run();
 }
 
 #[cfg(test)]
