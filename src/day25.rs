@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 pub struct Day25;
 
 #[derive(Debug)]
@@ -37,8 +35,6 @@ impl aoc24::DayInner<Day25, i32> for Day25 {
 
         for line in lines {
             if line.is_empty() {
-                println!("Block: {:?}", block);
-
                 // Process the block
                 if block[0] == "#####" {
                     let mut lock = Lock {
@@ -84,9 +80,6 @@ impl aoc24::DayInner<Day25, i32> for Day25 {
             block.push(line.to_string());
         }
 
-        println!("Keys: {:?}", keys);
-        println!("Locks: {:?}", locks);
-
         let mut fits = 0;
         for key in keys.iter() {
             for lock in locks.iter() {
@@ -94,7 +87,7 @@ impl aoc24::DayInner<Day25, i32> for Day25 {
                     fits += 1;
                 }
             }
-        }   
+        }
 
         // And we're done!
         (fits, 0)
