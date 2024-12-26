@@ -14,7 +14,7 @@ enum OpCode {
     Cdv,
 }
 
-// 2,4,1,2,7,5,1,3,4,3,5,5,0,3,3,0
+// 2,4,        1,2,            7,5,            1,3,              4,3,            5,5,      0,3,               3,0
 // Bst(B=A%8), Bxl(B=B XOR 2), Cdv(C = A/2^B), Bxl(B = B XOR 3), Bxc(B=B XOR C), Out(5=B), Adv (A = A / 2^3), Jnz(if A!=0, repeat)
 
 impl OpCode {
@@ -166,31 +166,71 @@ impl aoc24::DayInner<Day17, String> for Day17 {
         let p1_output_string_tmp: String = p1_output.iter().map(|d| d.to_string() + ",").collect();
         let p1_output_string = p1_output_string_tmp[..p1_output_string_tmp.len() - 1].to_string();
 
-        let mut test_a_reg = 0; //27818375000;
+        let mut test_a_reg = 1;
+        let mut matches = 0;
+
         loop {
-            if test_a_reg % 1000 == 0 {
-                println!("Testing A = {}", test_a_reg);
-            }
-            let mut test_computer = p2_computer.clone();
-            test_computer.registers.insert('A', test_a_reg);
-
-            // println!("Running test with A = {}", test_a_reg);
-            // println!("{:?}", test_computer);
-            let test_output = test_computer.run(true);
-
-            if test_a_reg % 1000 == 0 {
-                println!(
-                    "{}: {:?} -> {:?}",
-                    test_a_reg, test_computer.programme, test_output
-                );
-            }
-            if test_output == test_computer.programme {
+            let (matched, test_output) = try_with_val(&p2_computer, test_a_reg);
+            if matched {
                 break;
             }
-            test_a_reg += 1;
+
+            let mut these_matches = 0;
+            for ii in 0..test_output.len() {
+                if ii >= p2_computer.programme.len() {
+                    break;
+                }
+                if test_output[test_output.len() - 1 - ii]
+                    == p2_computer.programme[p2_computer.programme.len() - 1 - ii]
+                {
+                    these_matches += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if these_matches > matches {
+                matches = these_matches;
+                println!(
+                    "{}: {:?} ({}) -> {:?} ({}) {test_a_reg:b}",
+                    test_a_reg,
+                    test_output,
+                    test_output.len(),
+                    p2_computer.programme,
+                    p2_computer.programme.len()
+                );
+                test_a_reg *= 8;
+            } else {
+                test_a_reg += 1;
+            }
         }
 
         // And we're done!
         (p1_output_string, test_a_reg.to_string())
     }
+}
+
+fn try_with_val(p2_computer: &Computer, test_a_reg: i64) -> (bool, Vec<i64>) {
+    let mut test_computer = p2_computer.clone();
+    test_computer.registers.insert('A', test_a_reg);
+    let test_output = test_computer.run(false);
+
+    let mut stars = "".to_string();
+    let mut halfstars = "".to_string();
+    let mut spaces = "".to_string();
+    for ii in 0..test_output.len() {
+        if ii >= p2_computer.programme.len() {
+            break;
+        }
+        if test_output[ii] == p2_computer.programme[ii] {
+            if spaces.len() == 0 {
+                stars.push('*');
+            } else {
+                halfstars.push('?');
+            }
+        } else {
+            spaces.push(' ');
+        }
+    }
+    (test_output == test_computer.programme, test_output)
 }

@@ -43,7 +43,7 @@ fn main() {
     // day14::Day14 {}.run();
     // day15::Day15 {}.run();
     // day16::Day16 {}.run();
-    // day17::Day17 {}.run();
+    day17::Day17 {}.run();
     // day18::Day18 {}.run();
     // day19::Day19 {}.run();
     // day20::Day20 {}.run();
@@ -51,7 +51,7 @@ fn main() {
     // day22::Day22 {}.run();
     // day23::Day23 {}.run();
     // day24::Day24 {}.run();
-    day25::Day25 {}.run();
+    // day25::Day25 {}.run();
 }
 
 #[cfg(test)]
